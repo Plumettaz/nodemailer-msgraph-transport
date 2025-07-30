@@ -1,3 +1,4 @@
+const addressParser = require('nodemailer/lib/addressparser')
 const msal = require('@azure/msal-node')
 
 class MsgraphTransport {
@@ -26,7 +27,7 @@ class MsgraphTransport {
   async send (mail, done) {
     const token = await this.getAccessToken()
 
-    const from = mail.data.from
+    const from = addressParser(mail.data.from)[0].address
     const envelope = mail.message.getEnvelope()
     const messageId = mail.message.messageId()
 
