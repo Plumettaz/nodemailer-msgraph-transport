@@ -1,0 +1,15 @@
+{
+  "name": "nodemailer-msgraph-transport",
+  "version": "1.0.0",
+  "description": "Nodemailer transport using microsoft 365 graph api",
+  "main": "index.js",
+  "author": "Damien Plumettaz",
+  "license": "MIT",
+  "keywords": [
+    "Nodemailer",
+    "msal"
+  ],
+  "dependencies": {
+    "@azure/msal-node": "^3.6.4"
+  }
+}
