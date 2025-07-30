@@ -1,5 +1,5 @@
-const addressParser = require('nodemailer/lib/addressparser')
 const msal = require('@azure/msal-node')
+const addressParser = require('nodemailer/lib/addressparser')
 
 class MsgraphTransport {
   name = 'msGraph'
@@ -25,34 +25,51 @@ class MsgraphTransport {
   }
 
   async send (mail, done) {
-    const token = await this.getAccessToken()
-
-    const from = addressParser(mail.data.from)[0].address
     const envelope = mail.message.getEnvelope()
     const messageId = mail.message.messageId()
 
-    mail.message.build(async (err, data) => {
-      if (err) {
-        done(err)
-        return
-      }
+    const message = {
+      subject: mail.data.subject
+    }
+    message.body = mail.data.html ? {
+      contentType: 'html',
+      content: mail.data.html
+    } : {
+      contentType: 'text',
+      content: mail.data.text
+    }
+    if (mail.data.from) {
+      message.from = { emailAddress: addressParser(mail.data.from)[0] }
+    }
+    if (mail.data.to) {
+      message.toRecipients = addressParser(mail.data.to).map(recipient => ({ emailAddress: recipient}))
+    }
+    if (mail.data.cc) {
+      message.ccRecipients = addressParser(mail.data.cc).map(recipient => ({ emailAddress: recipient}))
+    }
+    if (mail.data.bcc) {
+      message.bccRecipients = addressParser(mail.data.bcc).map(recipient => ({ emailAddress: recipient}))
+    }
 
-      const response = await fetch(`https://graph.microsoft.com/v1.0/users/${from}/sendMail`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token.accessToken}`,
-          'Content-Type': 'text/plain'
-        },
-        body: data.toString('base64')
-      })
+    const userPrincipalName = mail.data.userPrincipalName || this.config.userPrincipalName
+    const saveToSentItems = mail.data.saveToSentItems !== undefined ? mail.data.saveToSentItems : this.config.saveToSentItems
 
-      if (response.status !== 202) {
-        const errorText = await response.text()
-        done(new Error(`Failed to send email: ${response.status} ${errorText}`))
-      } else {
-        done(null, { envelope, messageId })
-      }
+    const token = await this.getAccessToken()
+    const response = await fetch(`https://graph.microsoft.com/v1.0/users/${userPrincipalName}/sendMail`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token.accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ message, saveToSentItems })
     })
+
+    if (response.status !== 202) {
+      const errorText = await response.text()
+      done(new Error(`Failed to send email: ${response.status} ${errorText}`))
+    } else {
+      done(null, { envelope, messageId })
+    }
   }
 }
 
