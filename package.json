@@ -1,6 +1,6 @@
 {
   "name": "nodemailer-msgraph-transport",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Nodemailer transport using microsoft 365 graph api",
   "main": "index.js",
   "author": "Damien Plumettaz",
