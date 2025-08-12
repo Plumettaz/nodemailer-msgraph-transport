@@ -9,6 +9,10 @@
     "Nodemailer",
     "msal"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Plumettaz/nodemailer-msgraph-transport.git"
+  },
   "dependencies": {
     "@azure/msal-node": "^3.6.4",
     "nodemailer": "^7.0.5"
